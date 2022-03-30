@@ -1,20 +1,20 @@
-import * as path from 'path';
 import {
   checkFilesExist,
+  cleanupProject,
   fileExists,
   isNotWindows,
   isWindows,
   newProject,
   readFile,
   readJson,
-  cleanupProject,
   runCLI,
   runCLIAsync,
+  runCommand,
   uniq,
   updateFile,
-  runCommand,
 } from '@nrwl/e2e/utils';
 import { classify } from '@nrwl/workspace/src/utils/strings';
+import * as path from 'path';
 
 let proj: string;
 
@@ -476,19 +476,65 @@ describe('Move Angular Project', () => {
    * Tries moving an e2e project from ${app1} -> ${newPath}
    */
   it('should work for e2e projects', () => {
+    const oldCypressPath = `apps/${app1}-e2e/cypress.config.ts`;
+    checkFilesExist(oldCypressPath);
+    const oldCypressFileContents = readFile(oldCypressPath);
+    expect(oldCypressFileContents).toContain(`
+export default defineConfig({
+  e2e: nxE2EPreset(__dirname),
+})`);
+
     const moveOutput = runCLI(
       `generate @nrwl/angular:move --projectName=${app1}-e2e --destination=${newPath}-e2e`
     );
+    const newCypressPath = `apps/${newPath}-e2e/cypress.config.ts`;
 
-    // just check that the cypress.json is updated correctly
-    const cypressJsonPath = `apps/${newPath}-e2e/cypress.json`;
-    expect(moveOutput).toContain(`CREATE ${cypressJsonPath}`);
-    checkFilesExist(cypressJsonPath);
-    const cypressJson = readJson(cypressJsonPath);
-    expect(cypressJson.videosFolder).toEqual(
+    expect(moveOutput).toContain(`CREATE ${newCypressPath}`);
+    checkFilesExist(newCypressPath);
+
+    const movedCypressFileContents = readFile(newCypressPath);
+    // the config shouldn't contain anything about the paths by default so contents should be the same
+    expect(movedCypressFileContents).toEqual(oldCypressFileContents);
+  });
+
+  it('should work for custom e2e projects configs', () => {
+    const oldCypressPath = `apps/${app1}-e2e/cypress.config.ts`;
+    checkFilesExist(oldCypressPath);
+    const oldCypressFileContents = readFile(oldCypressPath);
+    expect(oldCypressFileContents).toContain(`
+export default defineConfig({
+  e2e: nxE2EPreset(__dirname),
+})`);
+
+    // write a config to make sure the paths are still updated if present
+    updateFile(
+      oldCypressPath,
+      `
+import { defineConfig } from 'cypress';
+import { nxE2EPreset } from '@nrwl/cypress/plugins/cypress-preset';
+
+export default defineConfig({
+  e2e: {
+    ...nxE2EPreset(__dirname),
+    videosFolder: "../../dist/cypress/apps/${app1}-e2e/videos",
+    screenshotsFolder: "../../dist/cypress/apps/${app1}-e2e/screenshots",
+   }
+});
+    `
+    );
+    const moveOutput = runCLI(
+      `generate @nrwl/angular:move --projectName=${app1}-e2e --destination=${newPath}-e2e`
+    );
+    const newCypressPath = `apps/${newPath}-e2e/cypress.config.ts`;
+
+    expect(moveOutput).toContain(`CREATE ${newCypressPath}`);
+    checkFilesExist(newCypressPath);
+
+    const movedCypressFileContents = readFile(newCypressPath);
+    expect(movedCypressFileContents).toContain(
       `../../../dist/cypress/apps/${newPath}-e2e/videos`
     );
-    expect(cypressJson.screenshotsFolder).toEqual(
+    expect(movedCypressFileContents).toContain(
       `../../../dist/cypress/apps/${newPath}-e2e/screenshots`
     );
   });
