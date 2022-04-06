@@ -33,10 +33,11 @@
     "migrations": "./migrations.json"
   },
   "dependencies": {
-    "@cypress/webpack-preprocessor": "^5.9.1",
+    "@cypress/webpack-preprocessor": "^5.11.1",
     "@nrwl/devkit": "file:../devkit",
     "@nrwl/linter": "file:../linter",
     "@nrwl/workspace": "file:../workspace",
+    "@phenomnomnominal/tsquery": "4.1.1",
     "chalk": "4.1.0",
     "enhanced-resolve": "^5.8.3",
     "fork-ts-checker-webpack-plugin": "6.2.10",
