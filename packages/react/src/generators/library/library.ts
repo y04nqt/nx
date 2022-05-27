@@ -1,3 +1,4 @@
+import { cypressComponentProject } from '@nrwl/cypress';
 import {
   addDependenciesToPackageJson,
   addProjectConfiguration,
@@ -45,10 +46,6 @@ import {
 import componentGenerator from '../component/component';
 import init from '../init/init';
 import { Schema } from './schema';
-import {
-  cypressComponentProject,
-  cypressComponentTestFiles,
-} from '@nrwl/cypress';
 
 export interface NormalizedSchema extends Schema {
   name: string;
@@ -104,7 +101,6 @@ export async function libraryGenerator(host: Tree, schema: Schema) {
     tasks.push(jestTask);
   }
 
-  // TODO(caleb): test this
   if (options.addCypress) {
     const cypressTask = await cypressComponentProject(host, {
       project: options.name,
