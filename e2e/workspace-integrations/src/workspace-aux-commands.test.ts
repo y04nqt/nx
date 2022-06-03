@@ -479,10 +479,6 @@ describe('Move Angular Project', () => {
     const oldCypressPath = `apps/${app1}-e2e/cypress.config.ts`;
     checkFilesExist(oldCypressPath);
     const oldCypressFileContents = readFile(oldCypressPath);
-    expect(oldCypressFileContents).toContain(`
-export default defineConfig({
-  e2e: nxE2EPreset(__dirname),
-})`);
 
     const moveOutput = runCLI(
       `generate @nrwl/angular:move --projectName=${app1}-e2e --destination=${newPath}-e2e`
@@ -499,13 +495,6 @@ export default defineConfig({
 
   it('should work for custom e2e projects configs', () => {
     const oldCypressPath = `apps/${app1}-e2e/cypress.config.ts`;
-    checkFilesExist(oldCypressPath);
-    const oldCypressFileContents = readFile(oldCypressPath);
-    expect(oldCypressFileContents).toContain(`
-export default defineConfig({
-  e2e: nxE2EPreset(__dirname),
-})`);
-
     // write a config to make sure the paths are still updated if present
     updateFile(
       oldCypressPath,
